@@ -13,33 +13,54 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 public class LogInActivity extends AppCompatActivity {
     private Button login;
-    private SQLiteDatabase db;
+    public static SQLiteDatabase db;
     private ContentValues values;
     private Cursor cursor;
     private EditText email;
     private EditText password;
+    public static String account;
     private int count;
     private String str;
-    private ContactsContract.Contacts contact;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
+//        Calendar sCalendar = Calendar.getInstance();
+//        String dayName = sCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+//        Toast.makeText(getApplicationContext(), dayName, Toast.LENGTH_LONG).show();
+
         db = openOrCreateDatabase("CSBS.db",
                 Context.MODE_PRIVATE, null);
         db.setLocale(Locale.getDefault());
         db.execSQL("Drop TABLE IF EXISTS 'Users'");
         db.execSQL("Create TABLE IF not EXISTS 'Users'('Email' Varchar(30) not null, 'Password' Varchar(30) not null)");
+        db.execSQL("Drop TABLE IF EXISTS 'Teacher'");
+        db.execSQL("Create TABLE IF not EXISTS 'Teacher'('TeacherID' Varchar(30) PRIMARY KEY not null, 'Name' Varchar(30) not null,'TeacherEmail' Varchar(30) not null,'Phone' Varchar(30) not null)");
+        db.execSQL("Drop TABLE IF EXISTS 'Location'");
+        db.execSQL("Create TABLE IF not EXISTS 'Location'('LocationID' Varchar(30) PRIMARY KEY not null, 'lat' Varchar(30) not null,'longt' Varchar(30) not null)");
+        db.execSQL("Drop TABLE IF EXISTS 'Courses'");
+        db.execSQL("Create TABLE IF not EXISTS 'Courses'('CourseID' Varchar(30) PRIMARY KEY not null,'TeacherID' Varchar(30)  not null,'Coursename' Varchar(30) not null,FOREIGN KEY('TeacherID') REFERENCES 'Teacher'('TeacherID'))");
+        db.execSQL("Drop TABLE IF EXISTS 'CoursesDetail'");
+        db.execSQL("Create TABLE IF not EXISTS 'CoursesDetail'('CoursesSection' Varchar(30) PRIMARY KEY not null,'CourseID' Varchar(30)  not null,'LocationID' Varchar(30) not null,'Day' Varchar(30) not null,'Time' Varchar(30) not null,FOREIGN KEY('CourseID') REFERENCES 'Courses'('CourseID'), FOREIGN KEY('LocationID') REFERENCES 'Location'('LocationID'))");
+        db.execSQL("Drop TABLE IF EXISTS 'Schedule'");
+        db.execSQL("Create TABLE IF not EXISTS 'Schedule'('CoursesSection' Varchar(30) not null,'Email' Varchar(30) not null, 'Note' Varchar(30) not null, PRIMARY KEY(CoursesSection,Email),FOREIGN KEY('CoursesSection') REFERENCES 'CoursesDetail'('CoursesSection'),FOREIGN KEY('Email') REFERENCES 'Users'('Email'))");
+
 //        Toast.makeText(getApplicationContext(), "Table created", Toast.LENGTH_LONG).show();
 
 //        db.execSQL("Create Table Users");
         db.execSQL("INSERT INTO Users Values('test@bentley.edu','12345')");
+        db.execSQL("INSERT INTO Teacher Values('T01','Bill Schiano','SBill@bentley.edu','611-666-8888')");
+        db.execSQL("INSERT INTO Courses Values('C01','T01','Information Technology')");
+        db.execSQL("INSERT INTO CoursesDetail Values('CS603-100','C01','SMI102','MWF','3:00PM-5:00PM')");
+        db.execSQL("INSERT INTO Location Values('SMI102','42.3889167','-71.2208033')");
+        db.execSQL("INSERT INTO Schedule Values('CS603-100','test@bentley.edu','Note1')");
 //        Toast.makeText(getApplicationContext(), "Value inserted", Toast.LENGTH_LONG).show();
 
 
@@ -50,7 +71,8 @@ public class LogInActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //                db.execSQL("SELECT Password FROM Users WHERE Email=?", new String[]{email.getText().toString()});
-                cursor = db.rawQuery("SELECT Password FROM Users WHERE Email="+"\""+email.getText().toString()+"\"",null);
+                account = email.getText().toString();
+                cursor = db.rawQuery("SELECT Password FROM Users WHERE Email="+"\""+account+"\"",null);
                 cursor.moveToFirst();
                 str = cursor.getString(0);
 ////                count = cursor.getInt(cursor.getColumnIndex("Password"));
@@ -77,5 +99,6 @@ public class LogInActivity extends AppCompatActivity {
         Intent i = new Intent(this, StudentMenuActivity.class);
         startActivity(i);
     }
+
 }
 
