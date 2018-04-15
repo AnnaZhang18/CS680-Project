@@ -47,7 +47,7 @@ public class StudentMenuActivity extends AppCompatActivity implements AdapterVie
         SimpleDateFormat df = new SimpleDateFormat("MM/dd/YYYY");
         String date = df.format(Calendar.getInstance().getTime());
         Today.setText(Today.getText().toString()+"            "+date+"     "+dayName);
-        dayName = dayName.trim().substring(0,1);
+        dayName = dayName.trim().substring(0,2);
 
 
         CourseNum = findViewById(R.id.todaylistcourse);
@@ -60,6 +60,7 @@ public class StudentMenuActivity extends AppCompatActivity implements AdapterVie
         cursor = db.rawQuery("SELECT CoursesSection FROM Schedule WHERE Email="+"\""+account+"\"",null);
 //        Toast.makeText(getApplicationContext(), "a", Toast.LENGTH_LONG).show();
         cursor.moveToFirst();
+
         do{
             CNcontent.add(cursor.getString(0));
         }while(cursor.moveToNext());

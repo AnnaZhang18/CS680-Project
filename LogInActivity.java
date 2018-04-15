@@ -10,9 +10,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -26,11 +32,31 @@ public class LogInActivity extends AppCompatActivity {
     public static String account;
     private int count;
     private String str;
+    private OutputStreamWriter out;
+    private CheckBox remember;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+        login = findViewById(R.id.loginbtn);
+        email = findViewById(R.id.email);
+        password = findViewById(R.id.password);
+        remember = findViewById(R.id.remember);
+        try {
+            FileInputStream in = openFileInput("account.txt");
+            InputStreamReader isr = new InputStreamReader(in);
+            BufferedReader reader = new BufferedReader(isr);
+            String str = null;
+            if(getFilesDir().exists()) {
+                if ((str = reader.readLine()) != null) {
+                    email.setText(str);
+                    remember.setChecked(true);
+                }
+            }
+            reader.close();
+
+        }catch (IOException e) {}
 
 //        Calendar sCalendar = Calendar.getInstance();
 //        String dayName = sCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
@@ -58,19 +84,25 @@ public class LogInActivity extends AppCompatActivity {
         db.execSQL("INSERT INTO Users Values('test@bentley.edu','12345')");
         db.execSQL("INSERT INTO Teacher Values('T01','Bill Schiano','SBill@bentley.edu','611-666-8888')");
         db.execSQL("INSERT INTO Courses Values('C01','T01','Information Technology')");
-        db.execSQL("INSERT INTO CoursesDetail Values('CS603-100','C01','SMI102','MWF','3:00PM-5:00PM')");
+        db.execSQL("INSERT INTO CoursesDetail Values('CS603-100','C01','SMI102','MoWeFrSa','3:00PM-5:00PM')");
         db.execSQL("INSERT INTO Location Values('SMI102','42.3889167','-71.2208033')");
         db.execSQL("INSERT INTO Schedule Values('CS603-100','test@bentley.edu','Note1')");
 //        Toast.makeText(getApplicationContext(), "Value inserted", Toast.LENGTH_LONG).show();
 
 
-        login = findViewById(R.id.loginbtn);
-        email = findViewById(R.id.email);
-        password = findViewById(R.id.password);
+
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                db.execSQL("SELECT Password FROM Users WHERE Email=?", new String[]{email.getText().toString()});
+
+                if(remember.isChecked()){
+                    try {
+                        out = new OutputStreamWriter(openFileOutput("account.txt", MODE_PRIVATE));
+
+                        out.write(email.getText().toString());
+                        out.close();
+                    }catch (IOException e) {}
+                }
                 account = email.getText().toString();
                 cursor = db.rawQuery("SELECT Password FROM Users WHERE Email="+"\""+account+"\"",null);
                 cursor.moveToFirst();

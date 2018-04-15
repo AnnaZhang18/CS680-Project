@@ -43,11 +43,11 @@
         android:id="@+id/texttime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Time"
+        android:layout_columnSpan="2"
         android:layout_margin="5dp"
         android:layout_marginLeft="20dp"
-        android:textColor="#000"
-        android:layout_columnSpan="2"/>
+        android:text="Time: "
+        android:textColor="#000" />
 
 
     <TextView
